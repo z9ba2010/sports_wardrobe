@@ -29,6 +29,7 @@ class _SearchScreenState extends State<SearchScreen> {
   List<ApparelProduct> _products = [];
   bool _isLoading = false;
   bool _isScanning = false;
+  bool _isOfflineMode = false;
   int? _addingProductId;
   String _selectedCategory = 'Все';
 
@@ -48,16 +49,25 @@ class _SearchScreenState extends State<SearchScreen> {
         query: query ?? _searchController.text,
         category: cat,
       );
-      setState(() => _products = results);
+      if (mounted) {
+        setState(() {
+          _products = results;
+          _isOfflineMode = widget.parserService.lastRequestUsedFallback;
+        });
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Ошибка связи с парсером: $e'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Ошибка связи с парсером: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -76,8 +86,11 @@ class _SearchScreenState extends State<SearchScreen> {
       );
 
       final matches = await widget.parserService.recognizeByPhoto(File(image.path));
-      if (matches.isNotEmpty) {
-        setState(() => _products = matches);
+      if (matches.isNotEmpty && mounted) {
+        setState(() {
+          _products = matches;
+          _isOfflineMode = widget.parserService.lastRequestUsedFallback;
+        });
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -198,6 +211,29 @@ class _SearchScreenState extends State<SearchScreen> {
             },
           ),
         ),
+
+        if (_isOfflineMode)
+          Container(
+            margin: const EdgeInsets.fromLTRB(14, 8, 14, 0),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0x1AFF6B00),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0x4DFF6B00)),
+            ),
+            child: Row(
+              children: const [
+                Icon(Icons.cloud_off, color: Color(0xFFFF6B00), size: 16),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Демо-каталог (сервер недоступен). Адрес API можно задать в ⚙️',
+                    style: TextStyle(color: Color(0xFFFDBA74), fontSize: 11),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
         const SizedBox(height: 8),
 

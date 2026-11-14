@@ -5,6 +5,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String subtitle;
   final int wardrobeCount;
   final VoidCallback onProfilePressed;
+  final VoidCallback? onSettingsPressed;
   final bool showProfileButton;
 
   const CustomAppBar({
@@ -13,6 +14,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.subtitle = 'Спортивный Гардероб',
     this.wardrobeCount = 0,
     required this.onProfilePressed,
+    this.onSettingsPressed,
     this.showProfileButton = true,
   }) : super(key: key);
 
@@ -69,6 +71,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
+        if (onSettingsPressed != null)
+          IconButton(
+            tooltip: 'Настройки сервера',
+            icon: const Icon(Icons.settings_outlined, color: Color(0xFF94A3B8), size: 22),
+            onPressed: onSettingsPressed,
+          ),
         if (showProfileButton)
           Padding(
             padding: const EdgeInsets.only(right: 14.0),

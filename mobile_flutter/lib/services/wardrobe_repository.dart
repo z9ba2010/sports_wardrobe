@@ -1,25 +1,56 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/wardrobe_item.dart';
 import '../models/apparel_product.dart';
 import 'category_mapper.dart';
 
 class WardrobeRepository {
-  final String remoteBaseUrl;
+  String remoteBaseUrl;
   final List<WardrobeItem> _inMemoryCache = [];
+  bool _cacheLoadedFromPrefs = false;
+  static const String _prefsKey = 'wardrobe_offline_cache_v1';
 
-  WardrobeRepository({this.remoteBaseUrl = 'http://10.0.2.2:8001'});
+  WardrobeRepository({this.remoteBaseUrl = 'http://192.168.0.175:8001'});
+
+  Future<void> _ensureLocalLoaded() async {
+    if (_cacheLoadedFromPrefs) return;
+    _cacheLoadedFromPrefs = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_prefsKey);
+      if (raw != null && raw.isNotEmpty) {
+        final List decoded = json.decode(raw);
+        _inMemoryCache.clear();
+        _inMemoryCache.addAll(decoded.map((e) => WardrobeItem.fromJson(e)));
+      }
+    } catch (e) {
+      print('Error loading offline wardrobe cache: $e');
+    }
+  }
+
+  Future<void> _saveLocalToPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = json.encode(_inMemoryCache.map((e) => e.toJson()).toList());
+      await prefs.setString(_prefsKey, encoded);
+    } catch (e) {
+      print('Error saving offline wardrobe cache: $e');
+    }
+  }
 
   /// Получить сохраненные вещи пользователя, сгруппированные по 4 секциям
   Future<Map<String, List<WardrobeItem>>> getGroupedWardrobe(String userId) async {
+    await _ensureLocalLoaded();
+
     try {
       final uri = Uri.parse('$remoteBaseUrl/api/v1/wardrobe/grouped?user_id=$userId');
-      final response = await http.get(uri).timeout(const Duration(seconds: 4));
+      final response = await http.get(uri).timeout(const Duration(seconds: 3));
 
       if (response.statusCode == 200) {
         final data = json.decode(utf8.decode(response.bodyBytes));
         final sectionsRaw = data['sections'] as Map<String, dynamic>;
-        
+
         Map<String, List<WardrobeItem>> result = {
           'Обувь': [],
           'Верх': [],
@@ -33,9 +64,9 @@ class WardrobeRepository {
           }
         });
 
-        // Синхронизируем локальный кэш
         _inMemoryCache.clear();
         result.values.forEach(_inMemoryCache.addAll);
+        await _saveLocalToPrefs();
 
         return result;
       }
@@ -62,6 +93,7 @@ class WardrobeRepository {
     required ApparelProduct product,
     String userId = 'user_default',
   }) async {
+    await _ensureLocalLoaded();
     final section = CategoryMapper.mapToSection(product.category, title: product.productName);
 
     final payload = {
@@ -81,19 +113,20 @@ class WardrobeRepository {
         uri,
         headers: {'Content-Type': 'application/json'},
         body: json.encode(payload),
-      ).timeout(const Duration(seconds: 4));
+      ).timeout(const Duration(seconds: 3));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final saved = WardrobeItem.fromJson(json.decode(utf8.decode(response.bodyBytes)));
         _inMemoryCache.removeWhere((i) => i.id == saved.id);
         _inMemoryCache.insert(0, saved);
+        await _saveLocalToPrefs();
         return saved;
       }
     } catch (e) {
-      print('Network error adding to wardrobe, saving in-memory: $e');
+      print('Network error adding to wardrobe, saving locally: $e');
     }
 
-    // Офлайн режим
+    // Офлайн режим с сохранением в SharedPreferences
     final localItem = WardrobeItem(
       id: DateTime.now().millisecondsSinceEpoch,
       userId: userId,
@@ -107,12 +140,15 @@ class WardrobeRepository {
       createdAt: DateTime.now(),
     );
     _inMemoryCache.insert(0, localItem);
+    await _saveLocalToPrefs();
     return localItem;
   }
 
   /// Удалить вещь из гардероба (CRUD Delete)
   Future<bool> deleteItem(int itemId, {String userId = 'user_default'}) async {
+    await _ensureLocalLoaded();
     _inMemoryCache.removeWhere((i) => i.id == itemId);
+    await _saveLocalToPrefs();
 
     try {
       final uri = Uri.parse('$remoteBaseUrl/api/v1/wardrobe/$itemId?user_id=$userId');
