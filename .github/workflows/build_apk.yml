@@ -1,0 +1,88 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Тип сборки (debug или release)'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+          - debug
+          - release
+
+jobs:
+  build:
+    name: Build Flutter Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Prepare Flutter Android Scaffolding
+        working-directory: mobile_flutter
+        run: |
+          echo "Инициализация Android оболочки Flutter..."
+          if [ ! -d "android" ]; then
+            flutter create --platforms=android --org com.maxfunfit .
+          fi
+
+          MANIFEST_FILE="android/app/src/main/AndroidManifest.xml"
+          if [ -f "$MANIFEST_FILE" ]; then
+            echo "Настройка разрешений в AndroidManifest.xml..."
+            sed -i '/<manifest/a \    <uses-permission android:name="android.permission.INTERNET"\/>\n    <uses-permission android:name="android.permission.CAMERA"\/>\n    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"\/>' "$MANIFEST_FILE"
+            sed -i 's/<application /<application android:usesCleartextTraffic="true" /g' "$MANIFEST_FILE"
+          fi
+
+      - name: Install Flutter Dependencies
+        working-directory: mobile_flutter
+        run: flutter pub get
+
+      - name: Build Android APK
+        working-directory: mobile_flutter
+        run: |
+          BUILD_TYPE="${{ github.event.inputs.build_type || 'debug' }}"
+          echo "Запуск сборки Flutter APK ($BUILD_TYPE)..."
+          if [ "$BUILD_TYPE" = "release" ]; then
+            flutter build apk --release --no-shrink || flutter build apk --debug
+          else
+            flutter build apk --debug
+          fi
+
+      - name: Find generated APKs
+        run: |
+          echo "Поиск собранных .apk файлов:"
+          find mobile_flutter/build/app/outputs/flutter-apk -name "*.apk" -type f
+          APK_COUNT=$(find mobile_flutter/build/app/outputs/flutter-apk -name "*.apk" -type f | wc -l)
+          if [ "$APK_COUNT" -eq 0 ]; then
+            echo "❌ Ошибка: APK файлы не найдены!"
+            exit 1
+          fi
+          echo "Успешно найдено APK файлов: $APK_COUNT"
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: maxfunfit-wardrobe-apk
+          path: |
+            mobile_flutter/build/app/outputs/flutter-apk/*.apk
+          retention-days: 14
+          if-no-files-found: error

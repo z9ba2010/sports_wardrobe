@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MaxFunFit — Спортивный Гардероб (Мобильный интерфейс)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              bg: '#0B1120',
+              card: '#1E293B',
+              border: '#334155',
+              accent: '#2563EB',
+              orange: '#FF6B00',
+              cyan: '#38BDF8',
+              emerald: '#10B981'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Mobile scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .touch-action-manipulation {
+      touch-action: manipulation;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-0 md:p-6 font-sans">
+
+  <!-- Mobile Device Shell Frame -->
+  <div class="w-full max-w-[430px] h-[920px] max-h-screen md:max-h-[880px] bg-slate-900 md:rounded-[42px] shadow-2xl md:ring-8 md:ring-slate-800 flex flex-col overflow-hidden relative border border-slate-800">
+    
+    <!-- Phone Status Bar -->
+    <div class="h-10 bg-slate-900/90 backdrop-blur px-6 pt-3 flex justify-between items-center text-xs font-semibold text-slate-400 select-none z-30">
+      <span id="current-time">09:41</span>
+      <div class="w-20 h-4 bg-slate-950 rounded-full mx-auto -mt-1 hidden md:block"></div>
+      <div class="flex items-center space-x-1.5 text-slate-300">
+        <span>5G</span>
+        <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.28 19.58 10.59 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+        <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M17 4h-3V2h-4v2H7v18h10V4z"/></svg>
+      </div>
+    </div>
+
+    <!-- 1. Главный App Bar с иконкой «Профиль пользователя» в верхнем правом углу (ТЗ п.1) -->
+    <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between shrink-0 z-20">
+      <div class="flex items-center space-x-2.5">
+        <button id="back-to-search-btn" class="hidden p-1 -ml-1 text-slate-300 hover:text-white" onclick="switchScreen('search')">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">MaxFunFit</span>
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-orange-500/10 text-orange-400 border border-orange-500/30 flex items-center gap-1">
+              ⚡ AI
+            </span>
+          </div>
+          <p id="app-bar-subtitle" class="text-xs text-slate-400 font-medium">Спортивный гардероб</p>
+        </div>
+      </div>
+
+      <!-- Иконка профиля пользователя в верхнем правом углу -->
+      <button 
+        id="profile-btn"
+        onclick="switchScreen('wardrobe')" 
+        class="relative p-1 text-slate-200 hover:text-white transition-all active:scale-95 group focus:outline-none"
+        title="Мой гардероб (Профиль пользователя)"
+      >
+        <div class="w-10 h-10 rounded-full bg-blue-600/90 border-2 border-blue-400 flex items-center justify-center shadow-lg shadow-blue-600/30 group-hover:bg-blue-500 transition-colors">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+        </div>
+        <!-- Бейдж количества вещей -->
+        <span id="wardrobe-badge" class="hidden absolute top-0 right-0 bg-orange-500 text-white font-extrabold text-[10px] min-w-[18px] h-[18px] rounded-full border-2 border-slate-900 flex items-center justify-center px-1">
+          0
+        </span>
+      </button>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto relative bg-slate-950 flex flex-col">
+      
+      <!-- ================= SCREEN 1: ПОИСК ОДЕЖДЫ ================= -->
+      <section id="screen-search" class="flex-1 flex flex-col">
+        
+        <!-- Панель управления поиском (Текстовая строка + кнопка Сканера/Камеры) -->
+        <div class="p-4 bg-slate-900/60 border-b border-slate-800/80 sticky top-0 z-10 backdrop-blur-md">
+          <div class="flex items-center gap-2">
+            <!-- Строка для текстового поиска -->
+            <div class="relative flex-1">
+              <input 
+                type="text" 
+                id="search-input" 
+                placeholder="Поиск по названию, бренду, SKU..."
+                class="w-full h-11 pl-10 pr-9 bg-slate-800/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                onkeyup="handleSearchInput(event)"
+              />
+              <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-3 top-3 text-slate-400 hover:text-white">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <!-- Кнопка «Сканер / Поиск по фото» (вызов камеры) -->
+            <label 
+              for="camera-file-input" 
+              class="h-11 px-3.5 bg-orange-600 hover:bg-orange-500 active:scale-95 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer shadow-md shadow-orange-600/30 transition-all shrink-0"
+              title="Сканер / Поиск по фото"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span>Фото</span>
+            </label>
+            <input 
+              type="file" 
+              id="camera-file-input" 
+              accept="image/*" 
+              capture="environment" 
+              class="hidden" 
+              onchange="handlePhotoUpload(event)"
+            />
+          </div>
+
+          <!-- Быстрые фильтры категорий -->
+          <div class="flex gap-2 overflow-x-auto pt-3 pb-1 -mx-4 px-4 no-scrollbar">
+            <button onclick="setCategoryFilter('Все')" class="filter-chip active px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white shrink-0 border border-blue-400 transition-all">Все</button>
+            <button onclick="setCategoryFilter('Обувь')" class="filter-chip px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white shrink-0 border border-slate-700 transition-all">👟 Обувь</button>
+            <button onclick="setCategoryFilter('Верх')" class="filter-chip px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white shrink-0 border border-slate-700 transition-all">👕 Верх</button>
+            <button onclick="setCategoryFilter('Низ')" class="filter-chip px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white shrink-0 border border-slate-700 transition-all">🩳 Низ</button>
+            <button onclick="setCategoryFilter('Аксессуары')" class="filter-chip px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white shrink-0 border border-slate-700 transition-all">🧢 Аксессуары</button>
+          </div>
+        </div>
+
+        <!-- Баннер AI распознавания -->
+        <div id="ai-scanning-banner" class="hidden mx-4 mt-3 p-3 bg-orange-500/15 border border-orange-500/40 rounded-xl flex items-center gap-3 animate-pulse">
+          <div class="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin shrink-0"></div>
+          <span class="text-xs text-orange-300 font-semibold">Gemini AI Vision сканирует фото кроссовка/экипировки...</span>
+        </div>
+
+        <div id="ai-result-banner" class="hidden mx-4 mt-3 p-3 bg-cyan-500/15 border border-cyan-500/40 rounded-xl flex items-center justify-between text-xs text-cyan-200">
+          <div class="flex items-center gap-2">
+            <span>✨</span>
+            <span id="ai-result-text" class="font-semibold"></span>
+          </div>
+          <button onclick="closeAiBanner()" class="text-slate-400 hover:text-white">&times;</button>
+        </div>
+
+        <!-- Мета-информация -->
+        <div class="px-4 py-2 flex items-center justify-between text-xs text-slate-400">
+          <span>Найдено в каталоге: <b id="catalog-count" class="text-slate-200">0</b></span>
+          <span class="text-slate-500">API: 127.0.0.1:8000</span>
+        </div>
+
+        <!-- Сетка карточек найденных товаров из ответа парсера (ТЗ п. 2) -->
+        <div id="catalog-grid" class="p-3 grid grid-cols-2 gap-3 pb-24">
+          <!-- Заполняется динамически -->
+        </div>
+
+        <!-- Индикатор загрузки -->
+        <div id="loading-spinner" class="py-16 flex flex-col items-center justify-center text-slate-400">
+          <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+          <p class="text-xs">Загрузка каталога экипировки...</p>
+        </div>
+      </section>
+
+
+      <!-- ================= SCREEN 2: МОЙ ГАРДЕРОБ (ПРОФИЛЬ) ================= -->
+      <section id="screen-wardrobe" class="hidden flex-1 flex flex-col pb-20">
+        
+        <!-- Заголовок профиля -->
+        <div class="p-4 bg-gradient-to-b from-slate-900 to-slate-900/50 border-b border-slate-800">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-white">Мой спортивный гардероб</h2>
+              <p class="text-xs text-slate-400">Сохранено: <span id="wardrobe-total-count" class="text-blue-400 font-bold">0</span> вещей</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Секции гардероба (Обувь, Верх, Низ, Аксессуары) (ТЗ п.3) -->
+        <div id="wardrobe-tabs-bar" class="flex border-b border-slate-800 bg-slate-900/70 sticky top-0 z-10 backdrop-blur">
+          <button onclick="switchWardrobeSection('Обувь')" id="tab-sec-Обувь" class="flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 flex items-center justify-center gap-1.5 transition-all">
+            <span>👟</span><span>Обувь</span> (<span id="count-Обувь">0</span>)
+          </button>
+          <button onclick="switchWardrobeSection('Верх')" id="tab-sec-Верх" class="flex-1 py-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center justify-center gap-1.5 transition-all">
+            <span>👕</span><span>Верх</span> (<span id="count-Верх">0</span>)
+          </button>
+          <button onclick="switchWardrobeSection('Низ')" id="tab-sec-Низ" class="flex-1 py-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center justify-center gap-1.5 transition-all">
+            <span>🩳</span><span>Низ</span> (<span id="count-Низ">0</span>)
+          </button>
+          <button onclick="switchWardrobeSection('Аксессуары')" id="tab-sec-Аксессуары" class="flex-1 py-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center justify-center gap-1.5 transition-all">
+            <span>🧢</span><span>Акс.</span> (<span id="count-Аксессуары">0</span>)
+          </button>
+        </div>
+
+        <!-- Сетка вещей выбранной секции -->
+        <div id="wardrobe-grid" class="p-3 grid grid-cols-2 gap-3">
+          <!-- Заполняется динамически -->
+        </div>
+
+        <!-- EMPTY STATE (ТЗ п. 3) -->
+        <div id="wardrobe-empty-state" class="hidden flex-1 flex flex-col items-center justify-center p-8 text-center my-auto">
+          <div class="w-20 h-20 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4">
+            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-white mb-2">Ваш гардероб пуст</h3>
+          <p class="text-xs text-slate-400 max-w-xs mb-6 leading-relaxed">
+            Найдите и добавьте вещи через каталог экипировки или воспользуйтесь поиском по фотографии.
+          </p>
+          <button 
+            onclick="switchScreen('search')" 
+            class="px-5 py-3 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/30 flex items-center gap-2 transition-all"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <span>Перейти к поиску</span>
+          </button>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- Нижняя мобильная панель навигации (Bottom Tabs) -->
+    <nav class="h-16 bg-slate-900 border-t border-slate-800 flex items-center justify-around px-2 z-20 shrink-0">
+      <button onclick="switchScreen('search')" id="nav-btn-search" class="flex flex-col items-center justify-center w-16 py-1 text-blue-400 transition-colors">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <span class="text-[10px] font-bold">Каталог</span>
+      </button>
+
+      <button onclick="triggerCameraInput()" class="flex flex-col items-center justify-center -mt-5">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 text-white flex items-center justify-center shadow-lg shadow-orange-600/40 border-2 border-slate-900 active:scale-95 transition-transform">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <span class="text-[10px] font-bold text-orange-400 mt-1">Сканер</span>
+      </button>
+
+      <button onclick="switchScreen('wardrobe')" id="nav-btn-wardrobe" class="flex flex-col items-center justify-center w-16 py-1 text-slate-400 hover:text-white transition-colors relative">
+        <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        <span class="text-[10px] font-bold">Гардероб</span>
+        <span id="nav-wardrobe-badge" class="hidden absolute top-0 right-3 w-2 h-2 bg-orange-500 rounded-full"></span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-white border border-slate-700 px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300">
+    <span id="toast-icon">✓</span>
+    <span id="toast-message">Товар добавлен</span>
+  </div>
+
+  <script>
+    // Global State
+    let currentScreen = 'search';
+    let currentCategoryFilter = 'Все';
+    let currentWardrobeSection = 'Обувь';
+    let catalogItems = [];
+    let wardrobeSections = {
+      'Обувь': [],
+      'Верх': [],
+      'Низ': [],
+      'Аксессуары': []
+    };
+    let savedNamesSet = new Set();
+
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('current-time').textContent = `${h}:${m}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Switch between Search screen and Wardrobe profile screen
+    function switchScreen(screen) {
+      currentScreen = screen;
+      const screenSearch = document.getElementById('screen-search');
+      const screenWardrobe = document.getElementById('screen-wardrobe');
+      const backBtn = document.getElementById('back-to-search-btn');
+      const profileBtn = document.getElementById('profile-btn');
+      const subtitle = document.getElementById('app-bar-subtitle');
+      const navSearch = document.getElementById('nav-btn-search');
+      const navWardrobe = document.getElementById('nav-btn-wardrobe');
+
+      if (screen === 'wardrobe') {
+        screenSearch.classList.add('hidden');
+        screenWardrobe.classList.remove('hidden');
+        backBtn.classList.remove('hidden');
+        profileBtn.classList.add('hidden');
+        subtitle.textContent = 'Мой гардероб (Профиль)';
+        navSearch.className = 'flex flex-col items-center justify-center w-16 py-1 text-slate-400 hover:text-white transition-colors';
+        navWardrobe.className = 'flex flex-col items-center justify-center w-16 py-1 text-blue-400 transition-colors relative';
+        loadWardrobe();
+      } else {
+        screenSearch.classList.remove('hidden');
+        screenWardrobe.classList.add('hidden');
+        backBtn.classList.add('hidden');
+        profileBtn.classList.remove('hidden');
+        subtitle.textContent = 'Каталог и поиск экипировки';
+        navSearch.className = 'flex flex-col items-center justify-center w-16 py-1 text-blue-400 transition-colors';
+        navWardrobe.className = 'flex flex-col items-center justify-center w-16 py-1 text-slate-400 hover:text-white transition-colors relative';
+      }
+    }
+
+    // Category Mapping (20 categories -> 4 sections)
+    function mapCategoryToSection(category, title) {
+      if (!category) category = '';
+      const c = category.toLowerCase();
+      if (c.includes('обув') || c.includes('кроссов') || c.includes('shoe')) return 'Обувь';
+      if (c.includes('майк') || c.includes('футбол') || c.includes('лонгслив') || c.includes('термо') || c.includes('кофт') || c.includes('жилет') || c.includes('ветров') || c.includes('куртк')) return 'Верх';
+      if (c.includes('шорт') || c.includes('тайтс') || c.includes('брюк') || c.includes('штаны')) return 'Низ';
+      if (c.includes('нос') || c.includes('гетр') || c.includes('бра') || c.includes('перчат') || c.includes('бафф') || c.includes('кепк') || c.includes('повяз') || c.includes('шапк')) return 'Аксессуары';
+      
+      const t = (title || '').toLowerCase();
+      if (t.includes('кроссов') || t.includes('обув')) return 'Обувь';
+      if (t.includes('куртк') || t.includes('ветров') || t.includes('футбол') || t.includes('майк')) return 'Верх';
+      if (t.includes('шорт') || t.includes('тайтс') || t.includes('брюк')) return 'Низ';
+      return 'Аксессуары';
+    }
+
+    // Fetch catalog from Parser API
+    async function fetchCatalog(search = '', category = '') {
+      const spinner = document.getElementById('loading-spinner');
+      const grid = document.getElementById('catalog-grid');
+      spinner.classList.remove('hidden');
+      grid.innerHTML = '';
+
+      try {
+        const params = new URLSearchParams();
+        if (search) params.append('search', search);
+        if (category && category !== 'Все') params.append('category', category);
+        params.append('page_size', '40');
+
+        const res = await fetch(`/api/v1/wardrobe/parser/search?${params.toString()}`);
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        catalogItems = data.items || [];
+        document.getElementById('catalog-count').textContent = data.total || catalogItems.length;
+        renderCatalog(catalogItems);
+      } catch (err) {
+        grid.innerHTML = `
+          <div class="col-span-2 py-12 text-center text-slate-400">
+            <p class="font-bold text-sm text-slate-300 mb-1">Связь с парсером</p>
+            <p class="text-xs">Запустите сервер uvicorn на порту 8000</p>
+          </div>
+        `;
+      } finally {
+        spinner.classList.add('hidden');
+      }
+    }
+
+    // Render Catalog Grid
+    function renderCatalog(items) {
+      const grid = document.getElementById('catalog-grid');
+      grid.innerHTML = '';
+
+      if (!items || items.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-2 py-16 text-center text-slate-400">
+            <p class="font-bold text-sm text-slate-300 mb-1">Ничего не найдено</p>
+            <p class="text-xs">Попробуйте другой запрос или сбросьте фильтры</p>
+          </div>
+        `;
+        return;
+      }
+
+      items.forEach(item => {
+        const isSaved = savedNamesSet.has(item.product_name || item.title);
+        const img = item.image_url || (item.image_urls && item.image_urls[0]) || '';
+        const price = (item.price_current || item.price || 0).toLocaleString('ru-RU') + ' ₽';
+        const name = item.product_name || item.title;
+
+        const card = document.createElement('div');
+        card.className = "bg-slate-800/90 rounded-2xl border border-slate-700/80 overflow-hidden flex flex-col justify-between shadow-lg hover:border-slate-600 transition-all";
+        card.innerHTML = `
+          <div class="relative w-full h-36 bg-slate-900 overflow-hidden">
+            ${img ? `<img src="${img}" alt="${name}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-500 text-xs">Нет фото</div>`}
+            <span class="absolute top-2 left-2 bg-slate-900/85 backdrop-blur text-cyan-400 text-[10px] font-extrabold px-2 py-0.5 rounded-md border border-slate-700/60">
+              ${item.brand}
+            </span>
+          </div>
+
+          <div class="p-3 flex-1 flex flex-col justify-between">
+            <div>
+              <span class="text-[10px] font-semibold text-slate-400 block truncate">${item.category || ''}</span>
+              <h4 class="text-xs font-bold text-white line-clamp-2 mt-0.5 leading-snug" title="${name}">${name}</h4>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-slate-700/50 flex flex-col gap-2">
+              <span class="text-sm font-extrabold text-orange-400">${price}</span>
+
+              <!-- Кнопка «Добавить в гардероб» -->
+              <button 
+                onclick="addToWardrobe(${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                class="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+                  isSaved 
+                    ? 'bg-emerald-500/15 border border-emerald-500/50 text-emerald-400 cursor-default' 
+                    : 'bg-blue-600 hover:bg-blue-500 active:scale-95 text-white shadow-md shadow-blue-600/20'
+                }"
+                ${isSaved ? 'disabled' : ''}
+              >
+                ${isSaved 
+                  ? `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg><span>В гардеробе</span>`
+                  : `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg><span>В гардероб</span>`
+                }
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Load Wardrobe from Backend
+    async function loadWardrobe() {
+      try {
+        const res = await fetch('/api/v1/wardrobe/grouped?user_id=user_default');
+        if (!res.ok) throw new Error('Wardrobe error');
+        const data = await res.json();
+        wardrobeSections = data.sections || { 'Обувь': [], 'Верх': [], 'Низ': [], 'Аксессуары': [] };
+        
+        let total = 0;
+        savedNamesSet.clear();
+
+        Object.keys(wardrobeSections).forEach(sec => {
+          const list = wardrobeSections[sec] || [];
+          total += list.length;
+          document.getElementById(`count-${sec}`).textContent = list.length;
+          list.forEach(item => savedNamesSet.add(item.item_name));
+        });
+
+        document.getElementById('wardrobe-total-count').textContent = total;
+
+        // Update badge
+        const badge = document.getElementById('wardrobe-badge');
+        const navBadge = document.getElementById('nav-wardrobe-badge');
+        if (total > 0) {
+          badge.textContent = total > 99 ? '99+' : total;
+          badge.classList.remove('hidden');
+          navBadge.classList.remove('hidden');
+        } else {
+          badge.classList.add('hidden');
+          navBadge.classList.add('hidden');
+        }
+
+        renderWardrobeSection(currentWardrobeSection, total);
+        renderCatalog(catalogItems);
+      } catch (err) {
+        console.error('Failed to load wardrobe:', err);
+      }
+    }
+
+    // Switch Wardrobe Section Tab
+    function switchWardrobeSection(section) {
+      currentWardrobeSection = section;
+      const tabs = ['Обувь', 'Верх', 'Низ', 'Аксессуары'];
+      tabs.forEach(sec => {
+        const tabEl = document.getElementById(`tab-sec-${sec}`);
+        if (sec === section) {
+          tabEl.className = 'flex-1 py-3 text-xs font-bold text-blue-400 border-b-2 border-blue-500 flex items-center justify-center gap-1.5 transition-all';
+        } else {
+          tabEl.className = 'flex-1 py-3 text-xs font-bold text-slate-400 hover:text-slate-200 border-b-2 border-transparent flex items-center justify-center gap-1.5 transition-all';
+        }
+      });
+
+      const total = Object.values(wardrobeSections).reduce((acc, cur) => acc + cur.length, 0);
+      renderWardrobeSection(section, total);
+    }
+
+    // Render items of selected section
+    function renderWardrobeSection(section, totalCount) {
+      const emptyState = document.getElementById('wardrobe-empty-state');
+      const grid = document.getElementById('wardrobe-grid');
+      const tabsBar = document.getElementById('wardrobe-tabs-bar');
+
+      if (totalCount === 0) {
+        emptyState.classList.remove('hidden');
+        tabsBar.classList.add('hidden');
+        grid.innerHTML = '';
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      tabsBar.classList.remove('hidden');
+      grid.innerHTML = '';
+
+      const items = wardrobeSections[section] || [];
+      if (items.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-2 py-16 text-center text-slate-400">
+            <p class="text-3xl mb-2">${getSectionEmoji(section)}</p>
+            <p class="font-bold text-sm text-slate-300 mb-1">Секция «${section}» пуста</p>
+            <p class="text-xs mb-4">Добавьте подходящие товары из поиска</p>
+            <button onclick="switchScreen('search')" class="px-4 py-2 bg-slate-800 text-blue-400 border border-blue-500/40 rounded-xl text-xs font-bold">
+              Найти в каталоге
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      items.forEach(item => {
+        const price = (item.price || 0).toLocaleString('ru-RU') + ' ₽';
+        const card = document.createElement('div');
+        card.className = "bg-slate-800/90 rounded-2xl border border-slate-700/80 overflow-hidden flex flex-col justify-between shadow-lg";
+        card.innerHTML = `
+          <div class="relative w-full h-36 bg-slate-900 overflow-hidden">
+            ${item.image_url ? `<img src="${item.image_url}" alt="${item.item_name}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center text-slate-500 text-xs">Нет фото</div>`}
+            <span class="absolute top-2 left-2 bg-slate-900/85 backdrop-blur text-cyan-400 text-[10px] font-extrabold px-2 py-0.5 rounded-md border border-slate-700/60">
+              ${item.brand}
+            </span>
+          </div>
+
+          <div class="p-3 flex-1 flex flex-col justify-between">
+            <div>
+              <span class="text-[10px] font-semibold text-slate-400 block">${item.category}</span>
+              <h4 class="text-xs font-bold text-white line-clamp-2 mt-0.5 leading-snug">${item.item_name}</h4>
+              <span class="text-xs font-extrabold text-orange-400 block mt-1">${price}</span>
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-slate-700/50 flex items-center justify-between">
+              ${item.source_url ? `
+                <a href="${item.source_url}" target="_blank" class="text-[10px] font-bold text-cyan-400 hover:underline flex items-center gap-1">
+                  Магазин ↗
+                </a>
+              ` : '<span></span>'}
+              
+              <button onclick="deleteFromWardrobe(${item.id})" class="p-1.5 text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition-colors" title="Удалить">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function getSectionEmoji(sec) {
+      if (sec === 'Обувь') return '👟';
+      if (sec === 'Верх') return '👕';
+      if (sec === 'Низ') return '🩳';
+      return '🧢';
+    }
+
+    // Add item to Wardrobe
+    async function addToWardrobe(item) {
+      try {
+        const payload = {
+          user_id: 'user_default',
+          item_name: item.product_name || item.title,
+          brand: item.brand,
+          raw_category: item.category,
+          category: mapCategoryToSection(item.category, item.product_name || item.title),
+          image_url: item.image_url || (item.image_urls && item.image_urls[0]) || '',
+          source_url: item.source_url,
+          price: item.price_current || item.price || 0
+        };
+
+        const res = await fetch('/api/v1/wardrobe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error('Save error');
+        showToast('✓ Добавлено в «' + payload.category + '»');
+        await loadWardrobe();
+      } catch (err) {
+        showToast('Ошибка сохранения', true);
+      }
+    }
+
+    // Delete item from Wardrobe
+    async function deleteFromWardrobe(itemId) {
+      try {
+        const res = await fetch(`/api/v1/wardrobe/${itemId}?user_id=user_default`, {
+          method: 'DELETE'
+        });
+        if (!res.ok) throw new Error('Delete error');
+        showToast('Вещь удалена из гардероба');
+        await loadWardrobe();
+      } catch (err) {
+        showToast('Не удалось удалить', true);
+      }
+    }
+
+    // Search bar input debounce
+    let searchTimer = null;
+    function handleSearchInput(e) {
+      const val = e.target.value;
+      const clearBtn = document.getElementById('clear-search-btn');
+      if (val.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
+
+      if (e.key === 'Enter') {
+        fetchCatalog(val, currentCategoryFilter);
+        return;
+      }
+
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        fetchCatalog(val, currentCategoryFilter);
+      }, 350);
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('search-input');
+      input.value = '';
+      document.getElementById('clear-search-btn').classList.add('hidden');
+      fetchCatalog('', currentCategoryFilter);
+    }
+
+    function setCategoryFilter(filter) {
+      currentCategoryFilter = filter;
+      document.querySelectorAll('.filter-chip').forEach(el => {
+        if (el.textContent.includes(filter)) {
+          el.className = 'filter-chip active px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white shrink-0 border border-blue-400 transition-all';
+        } else {
+          el.className = 'filter-chip px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white shrink-0 border border-slate-700 transition-all';
+        }
+      });
+      fetchCatalog(document.getElementById('search-input').value, filter);
+    }
+
+    // Camera / Photo Upload handler
+    function triggerCameraInput() {
+      document.getElementById('camera-file-input').click();
+    }
+
+    async function handlePhotoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const banner = document.getElementById('ai-scanning-banner');
+      const resBanner = document.getElementById('ai-result-banner');
+      banner.classList.remove('hidden');
+      resBanner.classList.add('hidden');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/v1/wardrobe/parser/scan', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) throw new Error('Vision error');
+        const data = await res.json();
+        
+        banner.classList.add('hidden');
+        resBanner.classList.remove('hidden');
+
+        const detected = data.detected || {};
+        const text = `Распознано: ${detected.model_name || detected.brand || 'Кроссовки'} (${detected.brand || ''})`;
+        document.getElementById('ai-result-text').textContent = text;
+
+        const results = [];
+        if (data.matched_product) results.push(data.matched_product);
+        if (data.similar_products) results.push(...data.similar_products);
+
+        if (results.length > 0) {
+          catalogItems = results;
+          document.getElementById('catalog-count').textContent = results.length;
+          renderCatalog(results);
+        } else {
+          fetchCatalog(detected.model_name || detected.brand || '');
+        }
+
+        showToast('AI Vision завершил анализ');
+      } catch (err) {
+        banner.classList.add('hidden');
+        showToast('Сбой анализа фото', true);
+      }
+    }
+
+    function closeAiBanner() {
+      document.getElementById('ai-result-banner').classList.add('hidden');
+    }
+
+    // Toast
+    let toastTimer = null;
+    function showToast(msg, isError = false) {
+      const t = document.getElementById('toast');
+      const m = document.getElementById('toast-message');
+      const i = document.getElementById('toast-icon');
+      m.textContent = msg;
+      i.textContent = isError ? '⚠' : '✓';
+      t.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-50 ${isError ? 'bg-red-600 text-white' : 'bg-slate-800 text-white border border-slate-700'} px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 opacity-100 transition-all duration-300`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        t.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-semibold flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300';
+      }, 2500);
+    }
+
+    // Initial boot
+    document.addEventListener('DOMContentLoaded', () => {
+      loadWardrobe();
+      fetchCatalog();
+    });
+  </script>
+</body>
+</html>

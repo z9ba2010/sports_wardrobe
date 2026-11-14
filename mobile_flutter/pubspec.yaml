@@ -1,0 +1,23 @@
+name: maxfunfit_wardrobe
+description: "Модуль Спортивный Гардероб для мобильного приложения MaxFunFit"
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  image_picker: ^1.1.0
+  sqflite: ^2.3.0
+  path: ^1.9.0
+  shared_preferences: ^2.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
